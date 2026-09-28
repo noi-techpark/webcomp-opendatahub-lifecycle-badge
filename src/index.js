@@ -2,66 +2,195 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-class HelloWorld extends HTMLElement {
-    constructor() {
-        super();
+const LIFECYCLE_DOCS_URL = "https://opendatahub.com/lifecycle-management/";
 
-        // We need an encapsulation of our component to not
-        // interfer with the host, nor be vulnerable to outside
-        // changes --> Solution = SHADOW DOM
-        this.shadow = this.attachShadow(
-            {mode: "open"}    // Set mode to "open", to have access to
-                              // the shadow dom from inside this component
-        );
-    }
+const LIFECYCLE_MODES = {
+  rnd: {
+    label: "Beta",
+    background: "#50742f",
+    color: "#ffffff",
+    border: "#50742f",
+    description:
+      "This tool is being tested and evaluated before a decision is made about production adoption",
+  },
+  deprecated: {
+    label: "Deprecation",
+    background: "#d12953",
+    color: "#ffffff",
+    border: "#d12953",
+    description:
+      "This tool is no longer part of the supported core and is planned for shutdown",
+  },
+};
 
-    // Attributes we care about getting values from
-    // Static, because all HelloWorld instances have the same
-    //   observed attribute names
-    static get observedAttributes() {
-        return ['title'];
-    }
-
-    // Override from HTMLElement
-    // Do not use setters here, because you might end up with an endless loop
-    attributeChangedCallback(propName, oldValue, newValue) {
-        console.log(`Changing "${propName}" from "${oldValue}" to "${newValue}"`);
-        if (propName === "title") {
-            this.render();
-        }
-    }
-
-    // We should better use such getters and setters and not
-    // internal variables for that to avoid the risk of an
-    // endless loop and to have attributes in the html tag and
-    // Javascript properties always in-sync.
-    get title() {
-        return this.getAttribute("title");
-    }
-
-    set title(newTitle) {
-        this.setAttribute("title", newTitle)
-    }
-
-    // Triggers when the element is added to the document *and*
-    // becomes part of the page itself (not just a child of a detached DOM)
-    connectedCallback() {
-        this.render();
-    }
-
-    render() {
-        this.shadow.innerHTML = `
-            <style>
-                h1 {
-                    color: red;
-                }
-            </style>
-            <h1>
-                ${this.title}
-            </h1>
-        `;
-    }
+function normalizeMode(raw) {
+  if (!raw) return null;
+  const key = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+  if (key === "rnd" || key === "randd" || key === "research" || key === "beta")
+    return "rnd";
+  if (key === "deprecated" || key === "deprecate" || key === "deprecation")
+    return "deprecated";
+  return null;
 }
 
-// Register our first Custom Element named <hello-world>
-customElements.define('hello-world', HelloWorld);
+class LifecycleBadge extends HTMLElement {
+  constructor() {
+    super();
+    this.shadow = this.attachShadow({ mode: "open" });
+  }
+
+  static get observedAttributes() {
+    return ["lifecycle"];
+  }
+
+  attributeChangedCallback(propName, oldValue, newValue) {
+    if (propName === "lifecycle" && oldValue !== newValue) {
+      this.render();
+    }
+  }
+
+  get lifecycle() {
+    return this.getAttribute("lifecycle");
+  }
+
+  set lifecycle(newValue) {
+    this.setAttribute("lifecycle", newValue);
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    const mode = normalizeMode(this.lifecycle);
+
+    if (!mode) {
+      this.shadow.innerHTML = "";
+      if (this.lifecycle) {
+        console.warn(
+          `opendatahub-lifecycle-badge: unrecognized lifecycle value "${this.lifecycle}"`,
+        );
+      }
+      return;
+    }
+
+    const { label, background, color, border, description } =
+      LIFECYCLE_MODES[mode];
+
+    this.shadow.innerHTML = `
+      <style>
+        :host {
+          display: flex;
+          align-items: center;
+          align-self: stretch;
+          position: relative;
+        }
+
+        .badge-container {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          height: 100%;
+        }
+
+        a.badge {
+          display: inline-flex;
+          align-items: center;
+          box-sizing: border-box;
+          
+          height: 100%;
+          margin-left: 1rem;
+          padding: 0 8px;
+          border-radius: 4px;
+          border: 1px solid ${border};
+
+          font-size: 1.125rem;
+          line-height: 1.25rem;
+          font-weight: 700;
+
+          background-color: ${background};
+          color: ${color};
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          text-decoration: none;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+        a.badge:hover {
+          filter: brightness(0.95);
+        }
+
+        .tooltip {
+          position: absolute;
+          top: calc(100% + 10px); /* Positioned below the badge */
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 50;
+
+          width: max-content;
+          max-width: 220px;
+          padding: 6px 10px;
+          border-radius: 4px;
+          
+          background-color: #374151; /* bg-gray-700 */
+          color: #ffffff;
+          font-size: 0.875rem; /* text-sm */
+          font-weight: 400;
+          text-transform: none;
+          letter-spacing: normal;
+          text-align: center;
+          word-break: break-word;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+          /* Smooth Transition */
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 150ms ease-in-out, visibility 150ms ease-in-out;
+          pointer-events: none;
+        }
+
+        /* Tooltip Arrow - Positioned at top center, pointing up */
+        .tooltip-arrow {
+          position: absolute;
+          top: -4px; /* Move arrow to top edge */
+          bottom: auto; /* Clear bottom rule */
+          left: 50%;
+          transform: translateX(-50%) rotate(45deg);
+          width: 8px;
+          height: 8px;
+          background-color: #374151; /* Matches tooltip background */
+        }
+
+        /* Hover & Focus States */
+        .badge-container:hover .tooltip,
+        .badge-container:focus-within .tooltip {
+          opacity: 1;
+          visibility: visible;
+        }
+      </style>
+
+      <div class="badge-container">
+        <a class="badge" href="${LIFECYCLE_DOCS_URL}" target="_blank" rel="noopener noreferrer">
+          ${label}
+        </a>
+        <div class="tooltip" role="tooltip">
+          ${description}
+          <div class="tooltip-arrow"></div>
+        </div>
+      </div>
+    `;
+
+    const linkEl = this.shadow.querySelector("a.badge");
+    if (linkEl) {
+      linkEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
+  }
+}
+
+customElements.define("opendatahub-lifecycle-badge", LifecycleBadge);
