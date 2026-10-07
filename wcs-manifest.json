@@ -1,10 +1,10 @@
 {
-  "title": "Hello-world",
-  "shortName": "hello-world-2",
-  "description": "Hello world simple webcomp example",
-  "descriptionAbstract": "Hello world simple webcomp example",
+  "title": "Open Data Hub Lifecycle Badge",
+  "shortName": "open-data-hub-lifecycle-badge",
+  "description": "Badge showing the lifecycle status (R&D or deprecated) of an Open Data Hub tool",
+  "descriptionAbstract": "Web component that displays a badge for certain lifecycle stages (R&D or deprecated) of Open Data Hub tools. The mode is set via an HTML attribute, and clicking the badge opens the lifecycle documentation",
   "license": "AGPL-3.0-or-later",
-  "repositoryUrl": "https://your-repository.git",
+  "repositoryUrl": "https://github.com/noi-techpark/webcomp-opendatahub-lifecycle-badge.git",
   "copyrightHolders": [
     {
       "name": "NOI",
@@ -15,32 +15,32 @@
   ],
   "authors": [
     {
-      "name": "Name",
-      "email": "email@example.com",
-      "organization": "Organization Name",
-      "organizationUrl": "https://example.com"
+      "name": "Elisa Ciardulli",
+      "email": "ciardulli.elisa@gmail.com",
+      "organization": "Open Data Hub",
+      "organizationUrl": "https://opendatahub.com"
     }
   ],
   "image": "wcs-logo.png",
-  "searchTags": [],
+  "searchTags": ["lifecycle", "badge", "opendatahub", "beta", "deprecated"],
   "dist": {
     "basePath": "dist",
     "files": [
-      "webcomp-boilerplate.min.js"
+      "webcomp-opendatahub-lifecycle-badge.min.js"
     ],
     "scripts": [
     ]
   },
   "configuration": {
-    "tagName": "hello-world",
+    "tagName": "opendatahub-lifecycle-badge",
     "options": [
       {
-        "key": "title",
+        "key": "lifecycle",
         "type": "text",
-        "label": "title of the web-comp",
-        "required": false,
+        "label": "lifecycle mode (RnD or deprecated)",
+        "required": true,
         "options": {
-          "default": "hello-world"
+          "default": "RnD"
         }
       }
     ]

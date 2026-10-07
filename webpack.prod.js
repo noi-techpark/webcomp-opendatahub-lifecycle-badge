@@ -5,10 +5,10 @@
 const path = require('path');
 
 module.exports = {
-  mode: 'production',
-  entry: './src/index.js',
+  mode: "production",
+  entry: "./src/index.js",
   output: {
-    filename: 'webcomp-boilerplate.min.js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: "webcomp-opendatahub-lifecycle-badge.min.js",
+    path: path.resolve(__dirname, "dist"),
   },
 };
