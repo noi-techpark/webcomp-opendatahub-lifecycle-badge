@@ -7,19 +7,27 @@ const LIFECYCLE_DOCS_URL = "https://opendatahub.com/lifecycle-management/";
 const LIFECYCLE_MODES = {
   rnd: {
     label: "Beta",
-    background: "#50742f",
-    color: "#ffffff",
-    border: "#50742f",
+    background: "#facc15",
+    color: "#000000",
+    border: "#facc15",
     description:
       "This tool is being tested and evaluated before a decision is made about production adoption",
   },
   deprecated: {
-    label: "Deprecation",
+    label: "Deprecated",
     background: "#d12953",
     color: "#ffffff",
     border: "#d12953",
     description:
       "This tool is no longer part of the supported core and is planned for shutdown",
+  },
+  testing: {
+    label: "Testing",
+    background: "#fa00ff",
+    color: "#000000",
+    border: "#fa00ff",
+    description:
+      "This tool is in a testing phase and its behavior may still change",
   },
 };
 
@@ -33,6 +41,7 @@ function normalizeMode(raw) {
     return "rnd";
   if (key === "deprecated" || key === "deprecate" || key === "deprecation")
     return "deprecated";
+   if (key === "testing" || key === "test") return "testing";
   return null;
 }
 
@@ -92,7 +101,7 @@ class LifecycleBadge extends HTMLElement {
         .badge-container {
           position: relative;
           display: inline-flex;
-          align-items: center;
+          align-items: center;   /* keeps the slimmer badge centered */
           height: 100%;
         }
 
@@ -100,16 +109,18 @@ class LifecycleBadge extends HTMLElement {
           display: inline-flex;
           align-items: center;
           box-sizing: border-box;
-          
-          height: 100%;
+
+          height: 70%;           /* was 100% → ~30% slimmer */
+          min-height: 1.25rem;   /* safety floor so the text never clips in very small parents */
           margin-left: 1rem;
           padding: 0 8px;
           border-radius: 4px;
           border: 1px solid ${border};
 
-          font-size: 1.125rem;
-          line-height: 1.25rem;
-          font-weight: 700;
+          font-size: 0.8125rem;
+          line-height: 1rem;
+          font-weight: 500;
+          letter-spacing: 0.03em;
 
           background-color: ${background};
           color: ${color};
